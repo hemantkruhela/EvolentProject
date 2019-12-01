@@ -1,14 +1,22 @@
 package com.evolent.resources;
 
-import java.util.List;
 
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
+import java.util.List;
+import java.util.Optional;
+
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -21,13 +29,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.LocaleResolver;
 
 import com.evolent.beans.Contact;
 import com.evolent.services.ContactService;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200", allowedHeaders = "*")
+@CrossOrigin(origins = "http://localhost:4200/", allowedHeaders = "*")
 @RequestMapping("/contacts")
 public class ContactsInfoResource {
 	
@@ -45,50 +52,85 @@ public class ContactsInfoResource {
 	}
 	
 	@GetMapping("/{contactId}")
-	public ResponseEntity<Contact> findAll(@PathVariable int contactId){
-			Contact contact = contactService.findContactById(contactId);
-		return new ResponseEntity<Contact>(contact,HttpStatus.OK);
+	public EntityModel<Contact> findAll(@PathVariable int contactId) throws EntityNotFoundException{
+		Optional<Contact> contact = contactService.findContactById(contactId);
+		contact.get().getContactId();		
+		  Link findOneLink = linkTo(methodOn(ContactsInfoResource.class).findAll(contactId)).withSelfRel();
+		  Link findAll = linkTo(methodOn(ContactsInfoResource.class).findAll(null)).withRel("All- Contacts");
+		  Link deleteLink = linkTo(methodOn(ContactsInfoResource.class).deleteContact(contactId)).withRel("Delete Contact");
+		  Link updateLink = linkTo(methodOn(ContactsInfoResource.class).updateContact(contact.get(), null)).withRel("Update contact");
+		  EntityModel< Contact> linkedContact = new EntityModel<Contact>(contact.get(), findOneLink,findAll,deleteLink,updateLink);
+		
+		  
+
+			  
+		return linkedContact;
 	}
 	@PostMapping("/")
-	public ResponseEntity<Contact> saveContact(@Valid @RequestBody Contact contact){
+	public EntityModel<Contact> saveContact(@Valid @RequestBody Contact contact){
 		Contact persistedContact = contactService.createContact(contact);
-		return new ResponseEntity<Contact>(persistedContact,HttpStatus.CREATED);
+		 Link findOneLink = linkTo(methodOn(ContactsInfoResource.class).findAll(persistedContact.getContactId())).withSelfRel();
+		  Link findAll = linkTo(methodOn(ContactsInfoResource.class).findAll(null)).withRel("All- Contacts");
+		  Link deleteLink = linkTo(methodOn(ContactsInfoResource.class).deleteContact(persistedContact.getContactId())).withRel("Delete Contact");
+		  Link updateLink = linkTo(methodOn(ContactsInfoResource.class).updateContact(persistedContact, null)).withRel("Update contact");
+		  EntityModel< Contact> linkedContact = new EntityModel<Contact>(persistedContact, findOneLink,findAll,deleteLink,updateLink);
+		return linkedContact;
 	}
 	
 	@PutMapping("/")
-	public ResponseEntity<Contact> updateContact( @Valid @RequestBody Contact contact,BindingResult bindingResult){
-		if(bindingResult.hasErrors()) {
-			//bindingResult.getAllErrors().get(0).getDefaultMessage();
-			String errorMessage = messageResource.getMessage(bindingResult.getAllErrors().get(0).getDefaultMessage(),null,LocaleContextHolder.getLocale());
-			throw new RuntimeException(errorMessage);
-		}
+	public EntityModel<Contact> updateContact( @Valid @RequestBody Contact contact,BindingResult bindingResult){
 		Contact persistedContact = contactService.updateContact(contact);
-		return new ResponseEntity<Contact>(persistedContact,HttpStatus.OK);
+		 Link findOneLink = linkTo(methodOn(ContactsInfoResource.class).findAll(persistedContact.getContactId())).withSelfRel();
+		  Link findAll = linkTo(methodOn(ContactsInfoResource.class).findAll(null)).withRel("All- Contacts");
+		  Link deleteLink = linkTo(methodOn(ContactsInfoResource.class).deleteContact(persistedContact.getContactId())).withRel("Delete Contact");
+		  Link updateLink = linkTo(methodOn(ContactsInfoResource.class).updateContact(persistedContact, null)).withRel("Update contact");
+		  EntityModel< Contact> linkedContact = new EntityModel<Contact>(persistedContact, findOneLink,findAll,deleteLink,updateLink);
+		return  linkedContact;
 	}
 	
 	@DeleteMapping("/{contactId}")
-	public ResponseEntity<Contact> deleteContact( @Valid @PathVariable int contactId){
-		Contact contact = contactService.findContactById(contactId);
-		contactService.deleteContact(contact.getContactId());
-		return new ResponseEntity<Contact>(contact,HttpStatus.OK);
+	public EntityModel<Contact> deleteContact( @Valid @PathVariable int contactId){
+		Optional<Contact> contact = contactService.findContactById(contactId);
+		contactService.deleteContact(contact.get().getContactId());
+		  Link findAll = linkTo(methodOn(ContactsInfoResource.class).findAll(null)).withRel("All- Contacts");
+		  EntityModel< Contact> linkedContact = new EntityModel<Contact>(contact.get(), findAll);
+			return  linkedContact;
 	}
 	
 	@PutMapping("/inactive/{contactId}")
-	public ResponseEntity<Contact> updateStatusInActiveContact(@PathVariable int contactId){
-		Contact contact = contactService.findContactById(contactId);
-		contact.setStatus("INACTIVE");
-		Contact persistedContact = contactService.updateContact(contact);
-		
-		return new ResponseEntity<Contact>(persistedContact,HttpStatus.OK);
+	public EntityModel<Contact> updateStatusInActiveContact(@PathVariable int contactId){
+		Optional<Contact> contact = contactService.findContactById(contactId);
+		contact.get().setStatus("INACTIVE");
+		Contact persistedContact = contactService.updateContact(contact.get());
+		 Link findOneLink = linkTo(methodOn(ContactsInfoResource.class).findAll(persistedContact.getContactId())).withSelfRel();
+		  Link findAll = linkTo(methodOn(ContactsInfoResource.class).findAll(null)).withRel("All- Contacts");
+		  Link deleteLink = linkTo(methodOn(ContactsInfoResource.class).deleteContact(persistedContact.getContactId())).withRel("Delete Contact");
+		  EntityModel< Contact> linkedContact = new EntityModel<Contact>(persistedContact, findOneLink,findAll,deleteLink);
+			return  linkedContact;
 	}
 	
 	@PutMapping("/active/{contactId}")
-	public ResponseEntity<Contact> updateStatusActiveContact(@PathVariable int contactId){
-		Contact contact = contactService.findContactById(contactId);
-		contact.setStatus("ACTIVE");
-		Contact persistedContact = contactService.updateContact(contact);
-		return new ResponseEntity<Contact>(persistedContact,HttpStatus.OK);
+	public EntityModel<Contact> updateStatusActiveContact(@PathVariable int contactId){
+		Optional<Contact> contact = contactService.findContactById(contactId);
+		contact.get().setStatus("ACTIVE");
+		Contact persistedContact = contactService.updateContact(contact.get());
+		 Link findOneLink = linkTo(methodOn(ContactsInfoResource.class).findAll(persistedContact.getContactId())).withSelfRel();
+		  Link findAll = linkTo(methodOn(ContactsInfoResource.class).findAll(null)).withRel("All- Contacts");
+		  Link deleteLink = linkTo(methodOn(ContactsInfoResource.class).deleteContact(persistedContact.getContactId())).withRel("Delete Contact");
+		  Link updateLink = linkTo(methodOn(ContactsInfoResource.class).updateContact(persistedContact, null)).withRel("Update contact");
+		  EntityModel< Contact> linkedContact = new EntityModel<Contact>(persistedContact, findOneLink,findAll,deleteLink,updateLink);
+			return  linkedContact;
 	}
 	
+	
+	/*
+	 * @ExceptionHandler(EntityNotFoundException.class) public
+	 * ResponseEntity<EntityNotFoundException>
+	 * EntityNotFoundExceptionHandler(Exception e){ return Exc
+	 * 
+	 * }
+	 */
+	  
+	 
 
 }

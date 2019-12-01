@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Size;
-import javax.xml.bind.annotation.XmlRootElement;
+
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -28,24 +28,25 @@ public class Contact {
 	private int contactId;
 
 	@Column(name="FIRST_NAME")
-	@Size(max=50, message="Size.Contact.firstName")
+	@Size(max=50, message="First name can not be less than 50")
 	private String firstName;
 
 	@Column(name="LAST_NAME")
-	@Size(max=50, message="Size.Contact.lastName")
+	@Size(max=50, message="Last name can not be less than 50")
 	private String lastName;
 	
 	@Column(name="EMAIL")
-	@Email(message="Size.Contact.email")
-	@Size(max=50, message="size.Contact.email")
+	@Email(message="Email's format is invalid")
+	@Size(max=50, message="Email can not be less than 50")
 	private String email;
 	
 	@Column(name="PHONE")
-	@Size(max=15, message="Size.Contact.phone")
+	@Size(max=15, message="Phone can not be less than 15")
 	private String phone;
 	
 	
 	@Column(name="STATUS")
+	@Size(max=10, message = "Status can not be less than 10")
 	private String status;
 	
 	@Override
