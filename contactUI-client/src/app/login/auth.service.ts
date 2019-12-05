@@ -25,6 +25,10 @@ export class AuthenticationService {
         this.registerSuccessfulLogin(username, password);
       }));
   }
+  
+  getBasicAuthToken(){
+      return 'Basic '+ window.btoa(this.username + ":" + this.password)
+  }
 
   createBasicAuthToken(username: String, password: String) {
     return 'Basic ' + window.btoa(username + ":" + password)

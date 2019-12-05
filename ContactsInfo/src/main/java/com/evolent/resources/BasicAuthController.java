@@ -10,8 +10,8 @@ import com.evolent.beans.AuthenticationBean;
 
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200/", allowCredentials = "false", allowedHeaders = "*")
-@RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "false", allowedHeaders = "*")
+@RequestMapping
 public class BasicAuthController {
 
 	@GetMapping(path = "/basicauth")

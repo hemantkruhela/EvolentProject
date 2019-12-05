@@ -34,7 +34,8 @@ import com.evolent.beans.Contact;
 import com.evolent.services.ContactService;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200/", allowedHeaders = "*")
+//@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "false", allowedHeaders = "*")
 @RequestMapping("/contacts")
 public class ContactsInfoResource {
 	

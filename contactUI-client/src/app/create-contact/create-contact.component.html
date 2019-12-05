@@ -20,9 +20,11 @@
             <label for="name">Phone</label>
             <input type="text" class="form-control" id="phone" required [(ngModel)]="contact.phone" name="phone">
     </div>
+    
     <div class="form-group">
-            <label for="name">status</label>
-            <input type="text" class="form-control" id="status" required [(ngModel)]="contact.status" name="status">
+      <label for="name">Status</label>
+      <input type="radio"  class="form-control"  name="status" value="ACTIVE"  [(ngModel)]='contact.status'> Active<br>
+      <input type="radio"   class="form-control" name="status" value="INACTIVE"  [(ngModel)]='contact.status'> In Active<br>
     </div>
     <button type="submit" class="btn btn-success">Submit</button>
   </form>
